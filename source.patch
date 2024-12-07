@@ -1,0 +1,72 @@
+diff --git a/editors/code/package.json b/editors/code/package.json
+index 82c43b76f..730f6c3d5 100644
+--- a/editors/code/package.json
++++ b/editors/code/package.json
+@@ -1,12 +1,12 @@
+ {
+     "name": "rust-analyzer",
+-    "displayName": "rust-analyzer",
+-    "description": "Rust language support for Visual Studio Code",
++    "displayName": "rust-analyzer-no-server",
++    "description": "Rust analyzer extension without bundled server, see https://github.com/loongcodium/rust-analyzer-no-server",
+     "private": true,
+     "icon": "icon.png",
+     "version": "0.5.0-dev",
+     "releaseTag": null,
+-    "publisher": "rust-lang",
++    "publisher": "loong-vsx",
+     "repository": {
+         "url": "https://github.com/rust-lang/rust-analyzer.git",
+         "type": "git"
+diff --git a/editors/code/src/commands.ts b/editors/code/src/commands.ts
+index 7ebc186a3..ae8b00e21 100644
+--- a/editors/code/src/commands.ts
++++ b/editors/code/src/commands.ts
+@@ -1508,7 +1508,7 @@ export function openWalkthrough(_: Ctx): Cmd {
+     return async () => {
+         await vscode.commands.executeCommand(
+             "workbench.action.openWalkthrough",
+-            "rust-lang.rust-analyzer#landing",
++            "loong-vsx.rust-analyzer#landing",
+             false,
+         );
+     };
+diff --git a/editors/code/src/config.ts b/editors/code/src/config.ts
+index 67bc72f1e..72316f9c8 100644
+--- a/editors/code/src/config.ts
++++ b/editors/code/src/config.ts
+@@ -14,7 +14,7 @@ export type RunnableEnvCfgItem = {
+ export type RunnableEnvCfg = Record<string, string> | RunnableEnvCfgItem[];
+ 
+ export class Config {
+-    readonly extensionId = "rust-lang.rust-analyzer";
++    readonly extensionId = "loong-vsx.rust-analyzer";
+     configureLang: vscode.Disposable | undefined;
+ 
+     readonly rootSection = "rust-analyzer";
+diff --git a/editors/code/src/main.ts b/editors/code/src/main.ts
+index fdf43f66f..8207660a6 100644
+--- a/editors/code/src/main.ts
++++ b/editors/code/src/main.ts
+@@ -206,11 +206,20 @@ function checkConflictingExtensions() {
+     if (vscode.extensions.getExtension("rust-lang.rust")) {
+         vscode.window
+             .showWarningMessage(
+-                `You have both the rust-analyzer (rust-lang.rust-analyzer) and Rust (rust-lang.rust) ` +
++                `You have both the rust-analyzer (loong-vsx.rust-analyzer) and Rust (rust-lang.rust) ` +
+                     "plugins enabled. These are known to conflict and cause various functions of " +
+                     "both plugins to not work correctly. You should disable one of them.",
+                 "Got it",
+             )
+             .then(() => {}, console.error);
+     }
++
++    if (vscode.extensions.getExtension("rust-lang.rust-analyzer")) {
++        vscode.window
++            .showWarningMessage(
++                "You have both the offical rust-analyzer (rust-lang.rust-analyzer) and no-server fork (loong-vsx.rust-analyzer) plugins enabled. You should disable one of them.",
++                "Got it",
++            )
++            .then(() => {}, console.error);
++    }
+ }

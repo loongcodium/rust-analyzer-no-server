@@ -79,10 +79,19 @@ jobs:
           repository: rust-lang/rust-analyzer
           ref: ${{ needs.check.outputs.commit }}
 
+      - name: Prepare patch
+        uses: actions/checkout@v4
+        with:
+          repository: loongcodium/rust-analyzer-no-server
+          path: rust-analyzer-no-server
+
       - name: Patch source
+        working-directory: editors/code
         run: |
           set -ex
-          jq '.publisher = "loong-vsx" | .version = "${{ needs.check.outputs.version }}"' editors/code/package.json > temp.json && mv temp.json editors/code/package.json
+          git apply ../../rust-analyzer-no-server/source.patch
+          jq '.version = "${{ needs.check.outputs.version }}"' package.json > temp.json
+          mv temp.json package.json
 
       - name: Install dependencies
         working-directory: editors/code
@@ -111,6 +120,5 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: dist/rust-analyzer-no-server.vsix
-          artifact_name: rust-analyzer-no-server.vsix
           tag: v${{ needs.check.outputs.version }}
           overwrite: true
