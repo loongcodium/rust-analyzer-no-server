@@ -1,0 +1,116 @@
+name: Build and release
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Extract version and commit
+        id: extract
+        run: |
+          set -ex
+
+          body=$(gh release view --repo rust-analyzer/rust-analyzer --json body -q .body)
+          if echo "$body" | grep -E -q "Release:.*v[0-9.]+.*"; then
+            version=$(echo "$body" | grep -E -o "Release:.*" | grep -E -o "v[0-9.]+" | sed 's/v//')
+            echo "version=$version" >> $GITHUB_OUTPUT
+          else
+            echo "Version not found"
+            exit 1
+          fi
+
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version format: $version"
+            exit 1
+          fi
+
+          if echo "$body" | grep -E -q "Commit:.*commit/[a-f0-9]+)"; then
+            commit_hash=$(echo "$body" | grep -E -o "Commit:.*commit/[a-f0-9]+)" | grep -E -o "[a-f0-9]{12,}")
+            echo "commit=$commit_hash" >> $GITHUB_OUTPUT
+          else
+            echo "Commit not found"
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if update needed
+        id: update
+        run: |
+          set -ex
+
+          latest_version=$(gh release view --repo loongcodium/rust-analyzer-no-server --json tagName -q .tagName | sed 's/v//')
+          up_to_date="false"
+          if [[ -z "$latest_version" ]]; then
+            echo "No previous release found. Update needed."
+          elif [[ "${{ steps.extract.outputs.version }}" = "$latest_version" ]]; then
+            echo "Current version (${{ steps.extract.outputs.version }}) matches latest release. No update needed."
+            up_to_date="true"
+          fi
+          echo "up_to_date=$up_to_date" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      version: ${{ steps.extract.outputs.version }}
+      commit: ${{ steps.extract.outputs.commit }}
+      up_to_date: ${{ steps.update.outputs.up_to_date }}
+
+  build:
+    runs-on: ubuntu-latest
+    if: ${{ needs.check.outputs.up_to_date == 'false' }}
+    needs: check
+    permissions:
+      contents: write
+    steps:
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Prepare source
+        uses: actions/checkout@v4
+        with:
+          repository: rust-lang/rust-analyzer
+          ref: ${{ needs.check.outputs.commit }}
+
+      - name: Patch source
+        run: |
+          set -ex
+          jq '.publisher = "loong-vsx" | .version = "${{ needs.check.outputs.version }}"' editors/code/package.json > temp.json && mv temp.json editors/code/package.json
+
+      - name: Install dependencies
+        working-directory: editors/code
+        run: |
+          set -ex
+          npm ci
+
+      - name: Package
+        working-directory: editors/code
+        run: |
+          set -ex
+          mkdir -p ../../dist
+          npx vsce package -o ../../dist/rust-analyzer-no-server.vsix
+
+      - name: Publish to Open VSX
+        timeout-minutes: 2
+        working-directory: editors/code
+        run: |
+          set -ex
+          npx ovsx publish --packagePath ../../dist/rust-analyzer-no-server.vsix
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+
+      - name: Publish to GitHub
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: dist/rust-analyzer-no-server.vsix
+          artifact_name: rust-analyzer-no-server.vsix
+          tag: v${{ needs.check.outputs.version }}
+          overwrite: true
