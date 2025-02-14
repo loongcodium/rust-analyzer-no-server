@@ -1,5 +1,5 @@
 diff --git a/editors/code/package.json b/editors/code/package.json
-index 82c43b76f..730f6c3d5 100644
+index 3f09033051..bdbc768c9a 100644
 --- a/editors/code/package.json
 +++ b/editors/code/package.json
 @@ -1,12 +1,12 @@
@@ -19,10 +19,10 @@ index 82c43b76f..730f6c3d5 100644
          "url": "https://github.com/rust-lang/rust-analyzer.git",
          "type": "git"
 diff --git a/editors/code/src/commands.ts b/editors/code/src/commands.ts
-index 7ebc186a3..ae8b00e21 100644
+index eee623ecae..7bfb5bb3fe 100644
 --- a/editors/code/src/commands.ts
 +++ b/editors/code/src/commands.ts
-@@ -1508,7 +1508,7 @@ export function openWalkthrough(_: Ctx): Cmd {
+@@ -1515,7 +1515,7 @@ export function openWalkthrough(_: Ctx): Cmd {
      return async () => {
          await vscode.commands.executeCommand(
              "workbench.action.openWalkthrough",
@@ -32,11 +32,11 @@ index 7ebc186a3..ae8b00e21 100644
          );
      };
 diff --git a/editors/code/src/config.ts b/editors/code/src/config.ts
-index 67bc72f1e..72316f9c8 100644
+index d1467a4e82..968bb94b5f 100644
 --- a/editors/code/src/config.ts
 +++ b/editors/code/src/config.ts
-@@ -14,7 +14,7 @@ export type RunnableEnvCfgItem = {
- export type RunnableEnvCfg = Record<string, string> | RunnableEnvCfgItem[];
+@@ -21,7 +21,7 @@ type ShowStatusBar =
+       };
  
  export class Config {
 -    readonly extensionId = "rust-lang.rust-analyzer";
@@ -45,10 +45,10 @@ index 67bc72f1e..72316f9c8 100644
  
      readonly rootSection = "rust-analyzer";
 diff --git a/editors/code/src/main.ts b/editors/code/src/main.ts
-index fdf43f66f..8207660a6 100644
+index c84b69b66c..34940c3f6d 100644
 --- a/editors/code/src/main.ts
 +++ b/editors/code/src/main.ts
-@@ -206,11 +206,20 @@ function checkConflictingExtensions() {
+@@ -209,11 +209,20 @@ function checkConflictingExtensions() {
      if (vscode.extensions.getExtension("rust-lang.rust")) {
          vscode.window
              .showWarningMessage(
