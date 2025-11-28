@@ -1,5 +1,5 @@
 diff --git a/editors/code/package.json b/editors/code/package.json
-index 26a21c1468..fec15d80c7 100644
+index 8475864427..22197e69dc 100644
 --- a/editors/code/package.json
 +++ b/editors/code/package.json
 @@ -1,12 +1,12 @@
@@ -19,10 +19,10 @@ index 26a21c1468..fec15d80c7 100644
      "repository": {
          "url": "https://github.com/rust-lang/rust-analyzer.git",
 diff --git a/editors/code/src/commands.ts b/editors/code/src/commands.ts
-index 3ac1a933d9..3776041865 100644
+index 16fc586d5d..eb12ec3ad0 100644
 --- a/editors/code/src/commands.ts
 +++ b/editors/code/src/commands.ts
-@@ -1556,7 +1556,7 @@ export function openWalkthrough(_: Ctx): Cmd {
+@@ -1533,7 +1533,7 @@ export function openWalkthrough(_: Ctx): Cmd {
      return async () => {
          await vscode.commands.executeCommand(
              "workbench.action.openWalkthrough",
@@ -32,23 +32,23 @@ index 3ac1a933d9..3776041865 100644
          );
      };
 diff --git a/editors/code/src/config.ts b/editors/code/src/config.ts
-index d2dc740c09..9958639621 100644
+index 5dc2c419ef..0d04dcf3dd 100644
 --- a/editors/code/src/config.ts
 +++ b/editors/code/src/config.ts
-@@ -16,7 +16,7 @@ export type RunnableEnvCfg = Record<string, string> | RunnableEnvCfgItem[];
+@@ -25,7 +25,7 @@ export type ConfigurationValue =
  type ShowStatusBar = "always" | "never" | { documentSelector: vscode.DocumentSelector };
  
  export class Config {
 -    readonly extensionId = "rust-lang.rust-analyzer";
 +    readonly extensionId = "loong-vsx.rust-analyzer";
-     configureLang: vscode.Disposable | undefined;
  
-     readonly rootSection = "rust-analyzer";
+     configureLang: vscode.Disposable | undefined;
+     workspaceState: vscode.Memento;
 diff --git a/editors/code/src/main.ts b/editors/code/src/main.ts
-index 5e50073069..9a0803e687 100644
+index 190f5866d0..18f5267291 100644
 --- a/editors/code/src/main.ts
 +++ b/editors/code/src/main.ts
-@@ -216,7 +216,7 @@ function checkConflictingExtensions() {
+@@ -222,7 +222,7 @@ function checkConflictingExtensions() {
      if (vscode.extensions.getExtension("rust-lang.rust")) {
          vscode.window
              .showWarningMessage(
@@ -57,7 +57,7 @@ index 5e50073069..9a0803e687 100644
                      "plugins enabled. These are known to conflict and cause various functions of " +
                      "both plugins to not work correctly. You should disable one of them.",
                  "Got it",
-@@ -224,4 +224,14 @@ function checkConflictingExtensions() {
+@@ -230,4 +230,14 @@ function checkConflictingExtensions() {
              // eslint-disable-next-line no-console
              .then(() => {}, console.error);
      }
