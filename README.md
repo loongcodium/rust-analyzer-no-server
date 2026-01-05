@@ -13,5 +13,5 @@ This extension solves that problem by providing a version of rust-analyzer that 
 ## How to use
 
 1. Build and install rust-analyzer on your system
-2. Install this extension
+2. Install this extension via [Open VSX](https://open-vsx.org/extension/loong-vsx/rust-analyzer) or [Releases](https://github.com/loongcodium/rust-analyzer-no-server/releases)
 3. If the extension cannot locate your rust-analyzer binary, you may need to manually specify its path using the `rust-analyzer.server.path` setting in your `settings.json`
