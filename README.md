@@ -2,6 +2,8 @@
 
 A VSCode extension derived from [rust-analyzer](https://github.com/rust-lang/rust-analyzer), but without the bundled binary. This extension tracks the latest version of the original extension.
 
+> DEPRECATED: The official rust-analyzer now publishes the "universal" variant, i.e. the one without the bundled binary. See https://github.com/rust-lang/rust-analyzer/issues/18578
+
 ## Why this extension exists
 
 The original rust-analyzer extension comes with pre-built binaries, which limits its availability to specific platforms when published to the extension registry. This creates challenges for VSCodium users on alternative architectures (such as RISC-V and Loong64) where pre-built binaries are not available.
